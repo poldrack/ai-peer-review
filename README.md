@@ -168,6 +168,22 @@ ai-peer-review --config-file /path/to/custom/config.json review path/to/paper.pd
 
 This allows you to maintain multiple configuration files for different purposes or environments. The custom config file will be used for all operations in that command session, including loading prompts and API keys.
 
+### Bundled profile: scientific-validity-only review
+
+The repository ships a ready-to-use configuration profile at `configs/scientific-only.json` that swaps the default prompts for a **scientific-validity-only** reviewing standard. The review, meta-review, and concerns-extraction prompts instruct the models to raise a criticism only when resolving it could change the validity, support, scope, reproducibility, or interpretation of a scientific claim, and to exclude concerns whose only consequence is formatting, length, readability, layout, grammar, or prose style (a wording or labeling issue is kept only when it creates scientifically consequential ambiguity, such as an undefined unit or an inconsistent cohort label). The prompts ask for a recommendation that would be unchanged if the paper were reformatted without changing its evidence or claims.
+
+This is useful when you want the models to focus on methods, inference, statistics, reproducibility, external validity, demonstrated novelty of explicit novelty claims, and claim-to-source support rather than producing presentation nitpicks. Because the prompts operate on the extracted PDF text, they instruct the models to treat a missing item as a request for clarification rather than asserting the work was not done.
+
+Run a review with the profile via the existing `--config-file` option:
+
+```bash
+ai-peer-review --config-file configs/scientific-only.json review path/to/paper.pdf
+```
+
+API keys are resolved from `*_API_KEY` environment variables first (see [API Keys](#api-keys) above), so you do not need to put any secrets in the profile; its `api_keys` section is intentionally left empty. If you prefer to keep keys in a config file, copy the profile to a private, untracked location and add them there rather than editing the tracked copy.
+
+The profile keeps the same placeholders (`{paper_text}`, `{reviews_text}`, `{meta_review_text}`, `{model_names}`, `{first_model}`, `{second_model}`, `{model_mapping}`), the `CONCERNS_TABLE_DATA` marker, the fenced JSON block, and the NATO phonetic reviewer names, so it preserves the interpolation and output-parsing contracts the existing pipeline relies on.
+
 ## Outputs
 
 The tool generates the following outputs in the specified directory (default: `./papers/[paper-name]`):
